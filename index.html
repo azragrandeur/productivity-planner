@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Day - Productivity Journal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --primary: #ffb347;
+      --secondary: #6ec3f0;
+      --accent: #ff7043;
+      --bg: #fffde7;
+    }
+    body {
+      font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+      background: linear-gradient(120deg, #fdf6e3 0%, #e0f7fa 100%);
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background: var(--primary);
+      padding: 2rem 0 1rem 0;
+      text-align: center;
+      box-shadow: 0 2px 8px #ffe08277;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header h1 {
+      font-size: 2.5rem;
+      margin: 0;
+      letter-spacing: 2px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+    header img {
+      width: 50px;
+      vertical-align: middle;
+    }
+    .motivation {
+      background: #fffde7 url('https://cdn.pixabay.com/photo/2017/01/31/13/14/star-2026611_1280.png') right 1rem top 1rem/40px no-repeat;
+      border-radius: 12px;
+      padding: 1.2rem;
+      font-size: 1.2rem;
+      color: var(--accent);
+      margin: 1rem auto 2rem auto;
+      box-shadow: 0 2px 8px #ffe08255;
+      font-style: italic;
+      text-align: center;
+      max-width: 600px;
+    }
+    /* Tabs */
+    .tabs {
+      display: flex;
+      justify-content: center;
+      background: #fffde7;
+      border-bottom: 2px solid #ffe082;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 1rem 2rem;
+      cursor: pointer;
+      font-size: 1.1rem;
+      color: var(--accent);
+      background: none;
+      border: none;
+      border-radius: 20px 20px 0 0;
+      margin: 0 0.2rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      outline: none;
+      transition: background 0.2s;
+    }
+    .tab-btn.active, .tab-btn:focus {
+      background: var(--primary);
+      color: #fff;
+    }
+    /* Tab content */
+    .tab-content {
+      display: none;
+      padding: 2rem 1rem;
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fffde7;
+      border-radius: 0 0 30px 30px;
+      box-shadow: 0 8px 32px #ffe08255;
+      min-height: 400px;
+      animation: fadeIn 0.6s;
+    }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(40px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    /* Task List */
+    .tasks-list {
+      margin: 1.5rem 0;
+      padding: 0;
+      list-style: none;
+    }
+    .tasks-list li {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      background: #e1f5fe;
+      border-radius: 12px;
+      padding: 0.8rem 1rem;
+      font-size: 1.1rem;
+      box-shadow: 0 2px 8px #b3e5fc66;
+    }
+    .tasks-list input[type="checkbox"] {
+      accent-color: var(--accent);
+      width: 1.3em;
+      height: 1.3em;
+    }
+    .tasks-list label {
+      flex: 1;
+      cursor: pointer;
+    }
+    .tasks-list .completed {
+      text-decoration: line-through;
+      color: #aaa;
+    }
+    .add-task-area {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .add-task-area input[type="text"] {
+      flex: 1;
+      padding: 0.7rem;
+      border-radius: 10px;
+      border: 2px solid #b3e5fc;
+      font-size: 1rem;
+    }
+    .add-task-area button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .add-task-area button:hover {
+      background: #ffab91;
+    }
+    .applause {
+      background: #fff9c4;
+      color: var(--accent);
+      font-size: 1.2rem;
+      border-radius: 10px;
+      padding: 0.7rem 1.2rem;
+      margin-top: 1rem;
+      display: none;
+      box-shadow: 0 2px 8px #ffe08255;
+      animation: pop 0.7s;
+      position: fixed;
+      left: 50%;
+      top: 20%;
+      transform: translate(-50%, 0);
+      z-index: 1000;
+    }
+    @keyframes pop {
+      0% { transform: scale(0.7) translate(-50%, 0);}
+      70% { transform: scale(1.2) translate(-50%, 0);}
+      100% { transform: scale(1) translate(-50%, 0);}
+    }
+    /* Calendar */
+    .calendar-controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      align-items: center;
+    }
+    .calendar-controls input[type="month"] {
+      font-size: 1.1rem;
+      padding: 0.4rem 1rem;
+      border-radius: 10px;
+      border: 2px solid #b3e5fc;
+      background: #e1f5fe;
+      color: #333;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .calendar-day, .calendar-header {
+      background: #e1f5fe;
+      border-radius: 8px;
+      text-align: center;
+      padding: 0.7rem 0;
+      font-size: 1.1rem;
+      box-shadow: 0 1px 4px #b3e5fc44;
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+    }
+    .calendar-header { background: var(--primary); color: #fff; font-weight: bold;}
+    .calendar-day.marked {
+      background: #ffd54f url('https://cdn.pixabay.com/photo/2017/01/31/13/14/star-2026611_1280.png') center/1.5em no-repeat;
+      color: var(--accent);
+      font-weight: bold;
+    }
+    /* Schedule */
+    .schedule-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 0.7rem;
+      margin-top: 1.5rem;
+    }
+    .schedule-table th, .schedule-table td {
+      padding: 0.7rem;
+      text-align: left;
+      border-radius: 8px;
+      background: #e1f5fe;
+      font-size: 1rem;
+    }
+    .schedule-table th {
+      background: var(--primary);
+      color: var(--accent);
+    }
+    .schedule-table input[type="text"] {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: 1.5px solid #b3e5fc;
+      font-size: 1rem;
+      background: #fffde7;
+    }
+    .save-schedule-btn {
+      margin-top: 1rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.7rem 2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .save-schedule-btn:hover {
+      background: #ffab91;
+    }
+    /* Notes */
+    .notes-area {
+      width: 100%;
+      min-height: 200px;
+      border: 2px solid #b3e5fc;
+      border-radius: 12px;
+      padding: 1rem;
+      font-size: 1.1rem;
+      background: #e1f5fe url('https://cdn.pixabay.com/photo/2016/03/31/20/37/diary-1292462_1280.png') right 1rem bottom 1rem/60px no-repeat;
+      resize: vertical;
+    }
+    .save-notes-btn {
+      margin-top: 1rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.7rem 2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .save-notes-btn:hover {
+      background: #ffab91;
+    }
+    /* Water Tracker */
+    .water-tracker {
+      display: flex;
+      gap: 1rem;
+      margin: 2rem 0 1rem 0;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .water-glass {
+      width: 60px;
+      height: 100px;
+      background: url('https://cdn.pixabay.com/photo/2013/07/12/12/58/glass-146191_1280.png') center/contain no-repeat;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .water-glass.filled::after {
+      content: '';
+      display: block;
+      position: absolute;
+      left: 8px; right: 8px; bottom: 8px;
+      height: 60%;
+      background: linear-gradient(to top, #4fc3f7 90%, transparent 100%);
+      border-radius: 0 0 20px 20px;
+      z-index: 1;
+      opacity: 0.8;
+    }
+    .water-label {
+      text-align: center;
+      margin-top: 0.5rem;
+      font-size: 1.1rem;
+    }
+    /* Responsive */
+    @media (max-width: 700px) {
+      .tab-content { padding: 1rem 0.2rem; }
+      .calendar-grid { grid-template-columns: repeat(7, 1fr);}
+      .water-tracker { gap: 0.5rem;}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>
+      <img src="https://cdn.pixabay.com/photo/2013/07/13/13/42/sun-161958_1280.png" alt="Sun cartoon">
+      My Day
+      <img src="https://cdn.pixabay.com/photo/2014/04/02/10/55/flower-304678_1280.png" alt="Flower cartoon">
+    </h1>
+    <div class="motivation">
+      "Every day is a fresh start. Make today amazing! 🌟"
+    </div>
+  </header>
+  <!-- Tabs -->
+  <nav class="tabs" aria-label="Main navigation">
+    <button class="tab-btn active" id="tabBtnTasks" aria-controls="tasksTab" tabindex="0">📝 Tasks</button>
+    <button class="tab-btn" id="tabBtnCalendar" aria-controls="calendarTab" tabindex="0">📅 Calendar</button>
+    <button class="tab-btn" id="tabBtnSchedule" aria-controls="scheduleTab" tabindex="0">⏰ Schedule</button>
+    <button class="tab-btn" id="tabBtnNotes" aria-controls="notesTab" tabindex="0">📔 Notes</button>
+    <button class="tab-btn" id="tabBtnWater" aria-controls="waterTab" tabindex="0">💧 Water</button>
+  </nav>
+
+  <main>
+    <!-- Tasks Tab -->
+    <section class="tab-content active" id="tasksTab">
+      <h2>Today's Tasks</h2>
+      <ul class="tasks-list" id="tasksList"></ul>
+      <form class="add-task-area" id="addTaskForm" autocomplete="off">
+        <input type="text" id="newTaskInput" placeholder="Add a new task..." aria-label="Add new task">
+        <button type="submit">Add</button>
+      </form>
+      <div class="applause" id="applausePop">🎉 Well done! Keep going! 🎉</div>
+    </section>
+
+    <!-- Calendar Tab -->
+    <section class="tab-content" id="calendarTab">
+      <h2>Monthly Calendar</h2>
+      <div class="calendar-controls">
+        <label for="calendarMonth" style="font-weight:bold;color:var(--accent);">Select Month:</label>
+        <input type="month" id="calendarMonth">
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+      <p style="margin-top:1.2rem;font-size:1.1rem;color:var(--accent);"><b>Tip:</b> Click a day to mark/unmark as important!</p>
+    </section>
+
+    <!-- Schedule Tab -->
+    <section class="tab-content" id="scheduleTab">
+      <h2>Daily Schedule Planner</h2>
+      <form id="scheduleForm">
+        <table class="schedule-table">
+          <tr>
+            <th>Time</th>
+            <th>Activity</th>
+          </tr>
+          <tbody id="scheduleTableBody"></tbody>
+        </table>
+        <button type="submit" class="save-schedule-btn">Save Schedule</button>
+      </form>
+    </section>
+
+    <!-- Notes Tab -->
+    <section class="tab-content" id="notesTab">
+      <h2>Diary & Notes</h2>
+      <textarea class="notes-area" id="notesArea" placeholder="Write your thoughts, gratitude, or memorable moments here..."></textarea>
+      <br>
+      <button type="button" class="save-notes-btn" id="saveNotesBtn">Save Notes</button>
+    </section>
+
+    <!-- Water Tracker Tab -->
+    <section class="tab-content" id="waterTab">
+      <h2>Water Tracker</h2>
+      <div class="water-tracker" id="waterTracker"></div>
+      <div class="water-label" id="waterLabel"></div>
+      <p style="color:#4fc3f7;">💧 Stay hydrated for a healthy day!</p>
+    </section>
+  </main>
+
+  <script>
+    // Tab switching
+    const tabs = [
+      { btn: 'tabBtnTasks', content: 'tasksTab' },
+      { btn: 'tabBtnCalendar', content: 'calendarTab' },
+      { btn: 'tabBtnSchedule', content: 'scheduleTab' },
+      { btn: 'tabBtnNotes', content: 'notesTab' },
+      { btn: 'tabBtnWater', content: 'waterTab' }
+    ];
+    tabs.forEach((tab, idx) => {
+      document.getElementById(tab.btn).addEventListener('click', function() {
+        tabs.forEach(t => {
+          document.getElementById(t.btn).classList.remove('active');
+          document.getElementById(t.content).classList.remove('active');
+        });
+        this.classList.add('active');
+        document.getElementById(tab.content).classList.add('active');
+      });
+    });
+
+    // --- Tasks ---
+    let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+    const tasksList = document.getElementById('tasksList');
+    const applausePop = document.getElementById('applausePop');
+    function renderTasks() {
+      tasksList.innerHTML = '';
+      tasks.forEach((task, idx) => {
+        const li = document.createElement('li');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = task.completed;
+        cb.id = 'task_cb_' + idx;
+        cb.addEventListener('change', () => {
+          task.completed = cb.checked;
+          if (cb.checked) {
+            applausePop.style.display = 'block';
+            setTimeout(() => applausePop.style.display = 'none', 1200);
+          }
+          saveTasks();
+          renderTasks();
+        });
+        const label = document.createElement('label');
+        label.htmlFor = cb.id;
+        label.textContent = task.text;
+        if (task.completed) label.classList.add('completed');
+        li.appendChild(cb);
+        li.appendChild(label);
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '🗑️';
+        delBtn.title = 'Delete Task';
+        delBtn.style.background = 'none';
+        delBtn.style.border = 'none';
+        delBtn.style.cursor = 'pointer';
+        delBtn.style.fontSize = '1.2em';
+        delBtn.addEventListener('click', () => {
+          tasks.splice(idx, 1);
+          saveTasks();
+          renderTasks();
+        });
+        li.appendChild(delBtn);
+        tasksList.appendChild(li);
+      });
+    }
+    function saveTasks() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+    document.getElementById('addTaskForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const input = document.getElementById('newTaskInput');
+      const val = input.value.trim();
+      if (val) {
+        tasks.push({ text: val, completed: false });
+        input.value = '';
+        saveTasks();
+        renderTasks();
+      }
+    });
+    renderTasks();
+
+    // --- Calendar ---
+    const calendarGrid = document.getElementById('calendarGrid');
+    const calendarMonth = document.getElementById('calendarMonth');
+    let markedDates = JSON.parse(localStorage.getItem('markedDates') || '{}');
+    function getMonthDays(year, month) {
+      return new Date(year, month + 1, 0).getDate();
+    }
+    function renderCalendar() {
+      calendarGrid.innerHTML = '';
+      const [year, month] = calendarMonth.value ? calendarMonth.value.split('-').map(Number) : [new Date().getFullYear(), new Date().getMonth() + 1];
+      const firstDay = new Date(year, month - 1, 1).getDay();
+      const daysInMonth = getMonthDays(year, month - 1);
+      // Headers
+      ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
+        const div = document.createElement('div');
+        div.textContent = d;
+        div.className = 'calendar-header';
+        calendarGrid.appendChild(div);
+      });
+      // Empty slots before first day
+      for (let i = 0; i < firstDay; i++) {
+        const div = document.createElement('div');
+        calendarGrid.appendChild(div);
+      }
+      // Days
+      for (let d = 1; d <= daysInMonth; d++) {
+        const div = document.createElement('div');
+        div.className = 'calendar-day';
+        div.textContent = d;
+        const key = `${year}-${month.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+        if (markedDates[key]) div.classList.add('marked');
+        div.addEventListener('click', () => {
+          if (markedDates[key]) {
+            delete markedDates[key];
+          } else {
+            markedDates[key] = true;
+          }
+          localStorage.setItem('markedDates', JSON.stringify(markedDates));
+          renderCalendar();
+        });
+        calendarGrid.appendChild(div);
+      }
+    }
+    function setCalendarToToday() {
+      const now = new Date();
+      calendarMonth.value = now.toISOString().slice(0,7);
+    }
+    calendarMonth.addEventListener('change', renderCalendar);
+    setCalendarToToday();
+    renderCalendar();
+
+    // --- Schedule ---
+    const scheduleTimes = [
+      "7:00 AM","8:00 AM","10:00 AM","12:00 PM","2:00 PM","4:00 PM","6:00 PM","8:00 PM"
+    ];
+    let schedule = JSON.parse(localStorage.getItem('schedule') || '{}');
+    const scheduleTableBody = document.getElementById('scheduleTableBody');
+    function renderSchedule() {
+      scheduleTableBody.innerHTML = '';
+      scheduleTimes.forEach((time, idx) => {
+        const tr = document.createElement('tr');
+        const tdTime = document.createElement('td');
+        tdTime.textContent = time;
+        const tdAct = document.createElement('td');
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = schedule[time] || '';
+        input.placeholder = "e.g. Activity";
+        input.name = 'activity_' + idx;
+        input.setAttribute('data-time', time);
+        tdAct.appendChild(input);
+        tr.appendChild(tdTime);
+        tr.appendChild(tdAct);
+        scheduleTableBody.appendChild(tr);
+      });
+    }
+    document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const inputs = scheduleTableBody.querySelectorAll('input');
+      inputs.forEach(input => {
+        schedule[input.getAttribute('data-time')] = input.value;
+      });
+      localStorage.setItem('schedule', JSON.stringify(schedule));
+      alert('Schedule saved!');
+    });
+    renderSchedule();
+
+    // --- Notes ---
+    const notesArea = document.getElementById('notesArea');
+    notesArea.value = localStorage.getItem('notes') || '';
+    document.getElementById('saveNotesBtn').addEventListener('click', function() {
+      localStorage.setItem('notes', notesArea.value);
+      alert('Notes saved!');
+    });
+
+    // --- Water Tracker ---
+    let water = parseInt(localStorage.getItem('water') || '0');
+    const waterTracker = document.getElementById('waterTracker');
+    const waterLabel = document.getElementById('waterLabel');
+    function renderWater() {
+      waterTracker.innerHTML = '';
+      for (let i = 0; i < 8; i++) {
+        const glass = document.createElement('div');
+        glass.className = 'water-glass' + (i < water ? ' filled' : '');
+        glass.title = `Glass ${i+1}`;
+        glass.tabIndex = 0;
+        glass.setAttribute('aria-label', `Glass ${i+1} ${i < water ? 'filled' : 'empty'}`);
+        glass.addEventListener('click', () => {
+          if (i < water) {
+            water = i;
+          } else {
+            water = i + 1;
+          }
+          localStorage.setItem('water', water);
+          renderWater();
+        });
+        glass.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') glass.click();
+        });
+        waterTracker.appendChild(glass);
+      }
+      waterLabel.textContent = `${water}/8 glasses completed`;
+    }
+    renderWater();
+
+    // --- Accessibility: Keyboard tab navigation ---
+    tabs.forEach((tab, idx) => {
+      document.getElementById(tab.btn).addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight') {
+          let next = (idx + 1) % tabs.length;
+          document.getElementById(tabs[next].btn).focus();
+        } else if (e.key === 'ArrowLeft') {
+          let prev = (idx - 1 + tabs.length) % tabs.length;
+          document.getElementById(tabs[prev].btn).focus();
+        }
+      });
+    });
+
+  </script>
+</body>
+</html>
